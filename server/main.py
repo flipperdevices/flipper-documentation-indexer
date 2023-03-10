@@ -3,12 +3,11 @@
 import os
 import uvicorn
 from fastapi import FastAPI, Request, Response
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import boto3
 import argparse
 
 app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=["*"])
 
 
 class EnvDefault(argparse.Action):
@@ -103,6 +102,9 @@ async def root():
     return s3GetDirs(
         args.access_key, args.secret_key, args.endpoint, args.region, args.bucket
     )
+
+
+app.mount("/", StaticFiles(directory="/static", html=True), name="root")
 
 
 def main():
