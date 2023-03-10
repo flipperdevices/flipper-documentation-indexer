@@ -6,7 +6,7 @@
         <title>Flipper Zero Firmware Documentation</title>
         <script>
             const baseURL = "https://doxy.flipperzero.one";
-            const backendURL = "http://127.0.0.1:8080";
+            const backendURL = "https://doxy.flipperzero.one/api";
             window.addEventListener("load", (event) => main());
             function backendGet(url) {
                 var req = new XMLHttpRequest();
@@ -22,13 +22,13 @@
                     req.open('GET', url, true);
                     req.send();
                 });
-            }
+            };
             function createOption(value) {
                 var option = document.createElement("option");
                 option.value = value;
                 option.innerHTML = value;
                 return option;
-            }
+            };
             async function addOptions(dropdown) {
                 var versions = await backendGet(backendURL);
                 versions.forEach(function(version) {
@@ -36,7 +36,7 @@
                 });
                 dropdown.remove(0);
                 dropdown.disabled = false;
-            }
+            };
             function setVersion(dropdown, iframe) {
                 iframe.style.display = "none";
                 iframe.src = baseURL + '/' + dropdown.value + '/index.html';

@@ -1,6 +1,6 @@
 FROM python:3.11-alpine3.17
 
-ADD src/ /app
+ADD server/ /app
 WORKDIR /app
 
 RUN python3 -m pip install -r requirements.txt
