@@ -98,7 +98,7 @@ def s3GetDirs(
     return sortAndMoveDev(directories)
 
 
-@app.get("/")
+@app.get("/api")
 async def root():
     return s3GetDirs(
         args.access_key, args.secret_key, args.endpoint, args.region, args.bucket
