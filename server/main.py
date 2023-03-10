@@ -3,11 +3,34 @@
 import os
 import uvicorn
 from fastapi import FastAPI, Request, Response
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import StreamingResponse
+from starlette.background import BackgroundTask
+import httpx
+from httpx import AsyncClient
 import boto3
 import argparse
 
 app = FastAPI()
+HTTP_SERVER = AsyncClient(
+    base_url="https://flipperzero-firmware-documentation.eu-central-1.linodeobjects.com"
+)
+
+
+async def _reverse_proxy(request: Request):
+    url = httpx.URL(path=request.url.path, query=request.url.query.encode("utf-8"))
+    headers = {
+        "Host": "flipperzero-firmware-documentation.eu-central-1.linodeobjects.com"
+    }
+    rp_req = HTTP_SERVER.build_request(
+        request.method, url, headers=headers, content=await request.body()
+    )
+    rp_resp = await HTTP_SERVER.send(rp_req, stream=True)
+    return StreamingResponse(
+        rp_resp.aiter_raw(),
+        status_code=rp_resp.status_code,
+        headers=rp_resp.headers,
+        background=BackgroundTask(rp_resp.aclose),
+    )
 
 
 class EnvDefault(argparse.Action):
@@ -104,7 +127,14 @@ async def root():
     )
 
 
-app.mount("/", StaticFiles(directory="/static", html=True), name="root")
+@app.get("/")
+async def root():
+    with open("/static/index.html") as file:
+        data = file.read()
+    return Response(content=data, media_type="text/html")
+
+
+app.add_route("/{path:path}", _reverse_proxy, ["GET"])
 
 
 def main():
