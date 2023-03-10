@@ -1,0 +1,77 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=11">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Flipper Zero Firmware Documentation</title>
+        <script>
+            const baseURL = "https://doxy.flipperzero.one";
+            const backendURL = "http://127.0.0.1:8080";
+            window.addEventListener("load", (event) => main());
+            function backendGet(url) {
+                var req = new XMLHttpRequest();
+                req.timeout = 2000;;
+                return new Promise(function(resolve, reject) {
+                    req.onload = function() {
+                        var resp = JSON.parse(req.responseText);
+                        resolve(resp);
+                    }
+                    req.ontimeout = function() {
+                        reject(resp);
+                    }
+                    req.open('GET', url, true);
+                    req.send();
+                });
+            }
+            function createOption(value) {
+                var option = document.createElement("option");
+                option.value = value;
+                option.innerHTML = value;
+                return option;
+            }
+            async function addOptions(dropdown) {
+                var versions = await backendGet(backendURL);
+                versions.forEach(function(version) {
+                    dropdown.add(createOption(version));
+                });
+                dropdown.remove(0);
+                dropdown.disabled = false;
+            }
+            function setVersion(dropdown, iframe) {
+                iframe.style.display = "none";
+                iframe.src = baseURL + '/' + dropdown.value + '/index.html';
+                iframe.style.display = "block";
+            };
+            function fixExternalLinksOpening() {
+                document.querySelectorAll('a[href]').forEach(a => {
+                    if (location.hostname == new URL(a.href).hostname)
+                        return;
+                    a.target = "_blank";
+                    a.rel = "noreferrer nofollow noopener";
+                });
+            };
+            async function main() {
+                var dropdown = document.getElementById("version");
+                var iframe = document.getElementById("doc-frame");
+                await addOptions(dropdown);
+                setVersion(dropdown, iframe);
+                document.addEventListener("change", (event) => setVersion(dropdown, iframe));
+            };
+        </script>
+        <style>
+            #doc-frame {
+                width: 100%;
+                height: 100%;
+                border: none;
+                display: none;
+            }
+        </style>
+    </head>
+    <body scroll="no" style="overflow: hidden">
+        <span>Documentation version: </span>
+        <select id="version" disabled="true">
+            <option>Loading versions..</option>
+        </select>
+        <iframe id="doc-frame"></iframe>
+    </body>
+</html>
