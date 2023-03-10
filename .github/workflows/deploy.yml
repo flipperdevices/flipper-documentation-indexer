@@ -6,7 +6,7 @@ on:
       - '*'
 
 env:
-  IMAGE_NAME: "flipperdevices/flipper-documentation-indexer"
+  IMAGE_NAME: "ghcr.io/flipperdevices/flipper-documentation-indexer"
 
 jobs:
   build:
