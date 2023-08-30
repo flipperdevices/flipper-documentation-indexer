@@ -10,24 +10,6 @@ from httpx import AsyncClient
 import boto3
 import argparse
 
-app = FastAPI()
-HTTP_SERVER = AsyncClient(base_url=f"{s3_protocol}://{s3_host}")
-
-
-async def _reverse_proxy(request: Request):
-    url = httpx.URL(path=request.url.path, query=request.url.query.encode("utf-8"))
-    headers = {"Host": s3_host}
-    rp_req = HTTP_SERVER.build_request(
-        request.method, url, headers=headers, content=await request.body()
-    )
-    rp_resp = await HTTP_SERVER.send(rp_req, stream=True)
-    return StreamingResponse(
-        rp_resp.aiter_raw(),
-        status_code=rp_resp.status_code,
-        headers=rp_resp.headers,
-        background=BackgroundTask(rp_resp.aclose),
-    )
-
 
 class EnvDefault(argparse.Action):
     def __init__(self, envvar, required=True, default=None, **kwargs):
@@ -97,7 +79,24 @@ def getArgs():
     return parser.parse_args()
 
 
+app = FastAPI()
 args = getArgs()
+HTTP_SERVER = AsyncClient(base_url=f"{args.origin-protocol}://{args.origin}")
+
+
+async def _reverse_proxy(request: Request):
+    url = httpx.URL(path=request.url.path, query=request.url.query.encode("utf-8"))
+    headers = {"Host": args.origin}
+    rp_req = HTTP_SERVER.build_request(
+        request.method, url, headers=headers, content=await request.body()
+    )
+    rp_resp = await HTTP_SERVER.send(rp_req, stream=True)
+    return StreamingResponse(
+        rp_resp.aiter_raw(),
+        status_code=rp_resp.status_code,
+        headers=rp_resp.headers,
+        background=BackgroundTask(rp_resp.aclose),
+    )
 
 
 def sortAndMoveDev(data: list) -> list:
