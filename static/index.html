@@ -5,8 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Flipper Zero Firmware Documentation</title>
         <script>
-            const baseURL = "https://doxy.flipperzero.one";
-            const backendURL = "https://doxy.flipperzero.one/api";
+            const baseURL = document.URL;
+            const backendURL = baseURL + "/api";
             window.addEventListener("load", (event) => main());
             function backendGet(url) {
                 var req = new XMLHttpRequest();
