@@ -116,7 +116,7 @@ def s3GetDirs(access_key: str, secret_key: str, region: str, bucket: str) -> lis
     )
     objects = client.list_objects(Bucket=bucket, Delimiter="/")
     prefixes = objects.get("CommonPrefixes")
-    if len(prefixes):
+    if prefixes:
         directories = [name.get("Prefix").split("/")[0] for name in prefixes]
         return sortAndMoveDev(directories)
     return []
