@@ -101,7 +101,8 @@ async def _reverse_proxy(request: Request):
 
 def sortAndMoveDev(data: list) -> list:
     data = sorted(data, reverse=True)
-    data.insert(0, data.pop(data.index("dev")))
+    if "dev" in data:
+        data.insert(0, data.pop(data.index("dev")))
     return data
 
 
