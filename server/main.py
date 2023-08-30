@@ -61,7 +61,7 @@ def getArgs():
         action=EnvDefault,
     )
     parser.add_argument(
-        "--origin-protocol",
+        "--origin_protocol",
         envvar="ORIGIN_PROTOCOL",
         default="",
         help="S3 origin protocol",
@@ -81,7 +81,7 @@ def getArgs():
 
 app = FastAPI()
 args = getArgs()
-HTTP_SERVER = AsyncClient(base_url=f"{args.origin-protocol}://{args.origin}")
+HTTP_SERVER = AsyncClient(base_url=f"{args.origin_protocol}://{args.origin}")
 
 
 async def _reverse_proxy(request: Request):
