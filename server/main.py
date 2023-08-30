@@ -115,10 +115,11 @@ def s3GetDirs(access_key: str, secret_key: str, region: str, bucket: str) -> lis
         region_name=region,
     )
     objects = client.list_objects(Bucket=bucket, Delimiter="/")
-    directories = [
-        name.get("Prefix").split("/")[0] for name in objects.get("CommonPrefixes")
-    ]
-    return sortAndMoveDev(directories)
+    prefixes = objects.get("CommonPrefixes")
+    if len(prefixes):
+        directories = [name.get("Prefix").split("/")[0] for name in prefixes]
+        return sortAndMoveDev(directories)
+    return []
 
 
 @app.get("/api")
