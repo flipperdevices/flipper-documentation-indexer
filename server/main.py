@@ -11,16 +11,12 @@ import boto3
 import argparse
 
 app = FastAPI()
-HTTP_SERVER = AsyncClient(
-    base_url="https://flipperzero-firmware-documentation.eu-central-1.linodeobjects.com"
-)
+HTTP_SERVER = AsyncClient(base_url=f"{s3_protocol}://{s3_host}")
 
 
 async def _reverse_proxy(request: Request):
     url = httpx.URL(path=request.url.path, query=request.url.query.encode("utf-8"))
-    headers = {
-        "Host": "flipperzero-firmware-documentation.eu-central-1.linodeobjects.com"
-    }
+    headers = {"Host": s3_host}
     rp_req = HTTP_SERVER.build_request(
         request.method, url, headers=headers, content=await request.body()
     )
@@ -67,14 +63,6 @@ def getArgs():
         action=EnvDefault,
     )
     parser.add_argument(
-        "--endpoint",
-        envvar="ENDPOINT",
-        default="",
-        help="S3 Endpoint URL",
-        metavar="URL",
-        action=EnvDefault,
-    )
-    parser.add_argument(
         "--region",
         envvar="REGION",
         required=True,
@@ -90,6 +78,22 @@ def getArgs():
         metavar="NAME",
         action=EnvDefault,
     )
+    parser.add_argument(
+        "--origin-protocol",
+        envvar="ORIGIN_PROTOCOL",
+        default="",
+        help="S3 origin protocol",
+        metavar="ORIGIN_PROTOCOL",
+        action=EnvDefault,
+    )
+    parser.add_argument(
+        "--origin",
+        envvar="ORIGIN",
+        default="",
+        help="S3 origin",
+        metavar="ORIGIN",
+        action=EnvDefault,
+    )
     return parser.parse_args()
 
 
@@ -102,15 +106,12 @@ def sortAndMoveDev(data: list) -> list:
     return data
 
 
-def s3GetDirs(
-    access_key: str, secret_key: str, endpoint: str, region: str, bucket: str
-) -> list:
+def s3GetDirs(access_key: str, secret_key: str, region: str, bucket: str) -> list:
     session = boto3.Session()
     client = session.client(
         service_name="s3",
         aws_access_key_id=access_key,
         aws_secret_access_key=secret_key,
-        endpoint_url=endpoint,
         region_name=region,
     )
     objects = client.list_objects(Bucket=bucket, Delimiter="/")
@@ -122,9 +123,7 @@ def s3GetDirs(
 
 @app.get("/api")
 async def root():
-    return s3GetDirs(
-        args.access_key, args.secret_key, args.endpoint, args.region, args.bucket
-    )
+    return s3GetDirs(args.access_key, args.secret_key, args.region, args.bucket)
 
 
 @app.get("/")
@@ -137,9 +136,5 @@ async def root():
 app.add_route("/{path:path}", _reverse_proxy, ["GET"])
 
 
-def main():
-    uvicorn.run("main:app", host="0.0.0.0", port=8080, workers=1)
-
-
 if __name__ == "__main__":
-    main()
+    uvicorn.run("main:app", host="0.0.0.0", port=8080, workers=1)
