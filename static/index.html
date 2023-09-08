@@ -7,8 +7,8 @@
     <script>
       const baseURL = location.origin + location.pathname
       const backendURL = baseURL + '/api'
-      const dropdown = document.getElementById('version')
-      const iframe = document.getElementById('doc-frame')
+      const dropdown = document.querySelector('#version')
+      let iframe = document.querySelector('#doc-frame')
       document.addEventListener('DOMContentLoaded', main)
 
       function createOption (value) {
@@ -29,9 +29,15 @@
       }
 
       function setVersion () {
+        if (!iframe) {
+          iframe = document.querySelector('#doc-frame')
+        }
+        iframe.before(dropdown)
+
         iframe.style.display = 'none'
         iframe.src = baseURL + '/' + dropdown.value + '/index.html'
         iframe.style.display = 'block'
+        iframe.onload = onIframeLoad()
       }
 
       function fixExternalLinksOpening () {
@@ -45,11 +51,23 @@
       }
 
       function onIframeLoad (url) {
+        url = iframe.src
         if (!dropdown) {
           return
         }
         const path = new URL(url).pathname.replace(`/flipperzero/doxygen/${dropdown.value}/`, '')
         location.hash = path
+
+        setTimeout(injectSelect, 500)
+      }
+
+      function injectSelect () {
+        const menu = iframe.contentDocument.querySelector('#main-menu')
+        const li = document.createElement('li')
+        li.style.padding = '0.5rem 0'
+        li.append(dropdown)
+        menu.prepend(li)
+        dropdown.addEventListener('change', setVersion)
       }
 
       async function main () {
@@ -74,10 +92,9 @@
     </style>
   </head>
   <body scroll="no" style="overflow: hidden">
-    <span>Documentation version: </span>
     <select id="version" disabled="true">
       <option>Loading versions..</option>
     </select>
-    <iframe id="doc-frame" onload="onIframeLoad(this.contentWindow.location.href)"></iframe>
+    <iframe id="doc-frame"></iframe>
   </body>
 </html>
