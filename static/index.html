@@ -6,8 +6,8 @@
     <title>Flipper Zero Firmware Documentation</title>
     <script>
       const baseURL = location.origin + location.pathname
-      const backendURL = baseURL + '/api'
-      const dropdown = document.querySelector('#version')
+      const backendURL = baseURL + 'api'
+      let dropdown
       let iframe = document.querySelector('#doc-frame')
       document.addEventListener('DOMContentLoaded', main)
 
@@ -71,6 +71,7 @@
       }
 
       async function main () {
+        dropdown = document.querySelector('#version')
         await addOptions(dropdown)
         setVersion()
         if (location.hash) {
