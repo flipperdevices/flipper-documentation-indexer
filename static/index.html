@@ -4,6 +4,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=11">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Flipper Zero Firmware Documentation</title>
+    <style>
+      body > select {
+        display: none;
+      }
+    </style>
     <script>
       const baseURL = location.origin + location.pathname
       const backendURL = baseURL + 'api'
@@ -35,7 +40,7 @@
         iframe.before(dropdown)
 
         iframe.style.display = 'none'
-        iframe.src = baseURL + '/' + dropdown.value + '/index.html'
+        iframe.src = baseURL + dropdown.value + '/index.html'
         iframe.style.display = 'block'
         iframe.onload = onIframeLoad()
       }
@@ -55,10 +60,8 @@
         if (!dropdown) {
           return
         }
-        const path = new URL(url).pathname.replace(`/flipperzero/doxygen/${dropdown.value}/`, '')
-        location.hash = path
 
-        setTimeout(injectSelect, 500)
+        setTimeout(injectSelect, 1000)
       }
 
       function injectSelect () {
@@ -75,7 +78,7 @@
         await addOptions(dropdown)
         setVersion()
         if (location.hash) {
-          iframe.src = `${baseURL}/${dropdown.value}/${location.hash.slice(1)}`
+          iframe.src = `${baseURL}${dropdown.value}/${location.hash.slice(1)}`
         }
         dropdown.addEventListener('change', setVersion)
       }
